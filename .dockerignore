@@ -1,0 +1,8 @@
+node_modules
+public/assets
+data
+tmp
+tests/e2e/reports
+tests/e2e/test-artifacts
+.git
+dbaccess

@@ -1,0 +1,11 @@
+# live reload for `make watch-backend` (templates are re-read from disk anyway)
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/dbaccess ."
+bin = "./tmp/dbaccess"
+include_ext = ["go"]
+exclude_dir = ["node_modules", "public", "tmp", "tests", "web_src"]
+exclude_regex = ["_test\\.go$"]
+delay = 300

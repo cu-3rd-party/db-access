@@ -1,0 +1,32 @@
+<div id="panel" class="flex flex-col gap-6">
+	{{if .Password}}
+	<section id="password-once" class="rounded border border-amber-500 bg-amber-50 p-4 dark:bg-amber-950">
+		<h2 class="font-semibold">Сохраните пароль сейчас</h2>
+		<p class="mb-2 text-sm">Он показывается один раз и нигде не хранится. Если потеряете его, получите новые логин и пароль кнопкой ниже.</p>
+		<code id="password" class="block select-all break-all rounded bg-white p-2 font-mono dark:bg-gray-900">{{.Password}}</code>
+	</section>
+	{{end}}
+
+	<section class="rounded border border-gray-300 p-4 dark:border-gray-700">
+		<h2 class="mb-2 font-semibold">Подключение</h2>
+		<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+			<dt class="text-gray-500">Хост</dt><dd><code>{{.DBHost}}</code></dd>
+			<dt class="text-gray-500">Порт</dt><dd><code>{{.DBPort}}</code></dd>
+			<dt class="text-gray-500">Логин</dt><dd><code id="login" class="select-all">{{.Account.Login}}</code></dd>
+			<dt class="text-gray-500">SSL</dt><dd><code>sslmode=require</code></dd>
+		</dl>
+		<p class="mt-3 text-xs text-gray-500">Клиент должен отправлять SNI: нужен libpq 14 или новее (psql, DBeaver и другие на его основе). По умолчанию доступ только на чтение.</p>
+	</section>
+
+	<section class="rounded border border-gray-300 p-4 dark:border-gray-700">
+		<h2 class="mb-2 font-semibold">Базы данных</h2>
+		<div class="flex flex-col gap-4">
+			{{range .Databases}}{{template "access/database" dict "Name" .Name "Write" .Write "ExpiresUnix" .ExpiresUnix "WriteHours" $.WriteHours "Login" $.Account.Login "Password" $.Password "DBHost" $.DBHost "DBPort" $.DBPort}}{{end}}
+		</div>
+		<p id="write-note" class="mt-4 text-sm text-amber-700 dark:text-amber-400">Write-доступ действует на одну базу и будет забран через день ({{.WriteHours}} ч). После этого созданные вами таблицы останутся доступны только на чтение.</p>
+	</section>
+
+	<form method="post" action="/account/rotate" hx-post="/account/rotate" hx-target="#panel" hx-swap="outerHTML" hx-confirm="Текущие логин и пароль перестанут работать, активные подключения будут закрыты. Продолжить?">
+		<button id="rotate" class="rounded bg-gray-800 px-3 py-1.5 text-white dark:bg-gray-200 dark:text-gray-900" type="submit">Обновить логин и пароль</button>
+	</form>
+</div>

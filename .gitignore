@@ -1,0 +1,17 @@
+/dbaccess
+/data/
+/public/assets/
+/node_modules/
+/tmp/
+coverage.out
+.env
+
+/tests/e2e/reports/
+/tests/e2e/test-artifacts/
+/tests/e2e/test-snapshots/
+/test-results/
+/playwright-report/
+
+.idea/
+.vscode/
+*.swp

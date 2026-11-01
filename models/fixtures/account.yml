@@ -1,0 +1,4 @@
+- id: 1
+  login: fixtureA
+  created_unix: 1700000000
+  rotated_unix: 0

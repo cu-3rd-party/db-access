@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .input {
+    @apply rounded-md border border-gray-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-gray-700 dark:bg-gray-900;
+  }
+
+  .btn {
+    @apply rounded-md px-4 py-2 font-medium disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+  }
+}
+
+/* htmx adds .is-loading (htmx.config.requestClass) to the element issuing a request */
+.is-loading {
+  @apply pointer-events-none opacity-60;
+}

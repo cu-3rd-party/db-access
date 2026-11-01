@@ -1,0 +1,33 @@
+# Local run: the app and a throwaway cluster with the layout of pg-grm.
+services:
+  app:
+    build: .
+    ports:
+      - "3000:8080"
+    environment:
+      DBACCESS_DB_DSN: postgres://dbaccess:dbaccess@db:5432/dbaccess?sslmode=disable
+      DBACCESS_PG_HOST: db
+      DBACCESS_PG_SSLMODE: disable
+      DBACCESS_PG_PASSWORD: provisioner
+      DBACCESS_COOKIE_SECRET: local-only-cookie-secret-0123456789abcdef
+      DBACCESS_COOKIE_SECURE: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: dbaccess
+      POSTGRES_PASSWORD: dbaccess
+      POSTGRES_DB: dbaccess
+    volumes:
+      - db:/var/lib/postgresql
+      - ./docker/init-local.sql:/docker-entrypoint-initdb.d/init-local.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "dbaccess"]
+      interval: 2s
+      retries: 15
+
+volumes:
+  db:

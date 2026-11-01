@@ -1,0 +1,94 @@
+version: "2"
+output:
+  sort-order:
+    - file
+linters:
+  default: none
+  enable:
+    - bidichk
+    - depguard
+    - errcheck
+    - forbidigo
+    - gocritic
+    - govet
+    - importas
+    - ineffassign
+    - modernize
+    - nakedret
+    - nolintlint
+    - revive
+    - staticcheck
+    - testifylint
+    - unconvert
+    - unparam
+    - unused
+    - usetesting
+    - wastedassign
+  settings:
+    depguard:
+      rules:
+        main:
+          deny:
+            - pkg: golang.org/x/exp
+              desc: it's experimental and unreliable
+            - pkg: github.com/pkg/errors
+              desc: use errors and fmt.Errorf("%w")
+        migration-isolation:
+          list-mode: lax
+          files:
+            - "**/models/migrations/**"
+          deny:
+            - pkg: git.cu3rd.ru/cu3rd/db-access/models
+              desc: >
+                Migrations must not import application models: models are the latest schema,
+                migrations run against the schema that existed when they were authored.
+        routers-no-orm:
+          list-mode: lax
+          files:
+            - "**/routers/**"
+          deny:
+            - pkg: xorm.io
+              desc: routers go through models/, never touch the ORM directly
+    forbidigo:
+      forbid:
+        - pattern: ^fmt\.Print.*$
+          msg: use log/slog
+    importas:
+      alias:
+        - pkg: git.cu3rd.ru/cu3rd/db-access/models/todo
+          alias: account_model
+    nakedret:
+      max-func-lines: 0
+    revive:
+      severity: error
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: exported
+        - name: increment-decrement
+        - name: var-naming
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: duplicated-imports
+        - name: modifies-value-receiver
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+  exclusions:
+    generated: lax
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+          - unparam
+formatters:
+  enable:
+    - gofumpt
