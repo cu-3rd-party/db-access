@@ -3,9 +3,15 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>{{if .Title}}{{.Title}} - {{end}}DB Access</title>
+	<meta name="theme-color" content="#050505">
+	<title>{{if .Title}}{{.Title}} - {{end}}cu3rd</title>
+	<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 	<link rel="stylesheet" href="{{AssetURL "css/index.css"}}">
 	<script defer src="{{AssetURL "js/index.js"}}"></script>
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100" hx-headers='{"X-Requested-With": "htmx"}'>
-<main class="mx-auto max-w-xl px-4 py-10">
+<body class="flex min-h-screen flex-col bg-page text-ink" hx-headers='{"X-Requested-With": "htmx"}'>
+<nav class="flex h-[49px] shrink-0 items-center gap-4 border-b border-line bg-page px-5">
+	<a href="/" aria-label="На главную"><img src="/img/logo.svg" width="54" height="30" alt="3rd party"></a>
+	<a class="text-ink-light hover:text-ink" href="https://git.cu3rd.ru">Forgejo</a>
+</nav>
+<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-4">

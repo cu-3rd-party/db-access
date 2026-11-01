@@ -28,8 +28,9 @@ func Routes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(httpmw.AccessLog, middleware.Recoverer)
 
-	// public/ contains assets/ (webpack output), so the URL path maps 1:1
+	// public/ contains assets/ (webpack output) and img/, so the URL path maps 1:1
 	r.Handle("/assets/*", http.FileServerFS(assets.Public()))
+	r.Handle("/img/*", http.FileServerFS(assets.Public()))
 	r.Get("/api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := db.GetEngine(r.Context()).Ping(); err != nil {
 			http.Error(w, "database unavailable", http.StatusServiceUnavailable)

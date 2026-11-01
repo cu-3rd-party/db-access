@@ -1,14 +1,16 @@
 {{template "base/head" .}}
-<h1 class="mb-1 text-2xl font-semibold">Доступ к учебным базам данных</h1>
-<p class="mb-6 text-sm text-gray-600 dark:text-gray-400">Базы курсов ЦУ: <code>cu-sql</code> и <code>cu-db</code>. Этот браузер запоминается по cookie, поэтому при следующем заходе пользователь будет тем же.</p>
+<div class="mb-4">
+	<h1 class="mb-1 text-xl font-medium">Доступ к учебным базам данных</h1>
+	<p class="text-ink-light">Базы курсов ЦУ: <code>cu-sql</code> и <code>cu-db</code>. Этот браузер запоминается по cookie, поэтому при следующем заходе пользователь будет тем же.</p>
+</div>
 {{if .Account}}
 {{template "access/panel" .}}
 {{else}}
-<div id="panel" hx-post="/account" hx-trigger="load" hx-swap="outerHTML">
-	<p class="text-gray-600 dark:text-gray-400">Создаём пользователя…</p>
+<div id="panel" class="box box-body" hx-post="/account" hx-trigger="load" hx-swap="outerHTML">
+	<p class="text-ink-light">Создаём пользователя…</p>
 	<noscript>
 		<form method="post" action="/account">
-			<button class="mt-2 rounded bg-blue-600 px-3 py-1.5 text-white" type="submit">Создать пользователя</button>
+			<button class="btn btn-primary mt-2" type="submit">Создать пользователя</button>
 		</form>
 	</noscript>
 </div>

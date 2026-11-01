@@ -236,5 +236,7 @@ func Write(ctx *context.Context) {
 	}
 	ctx.Data["Name"], ctx.Data["Write"], ctx.Data["ExpiresUnix"] = view.Name, view.Write, view.ExpiresUnix
 	ctx.Data["WriteHours"] = int(setting.WriteTTL.Hours())
+	ctx.Data["Login"] = acc.Login
+	ctx.Data["DBHost"], ctx.Data["DBPort"] = setting.PublicDBHost, setting.PublicDBPort
 	ctx.HTML(http.StatusOK, tplRow)
 }

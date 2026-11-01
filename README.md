@@ -30,6 +30,11 @@
 время, IP, `X-Forwarded-For`, логин, метод, хост, путь, query, статус, размер, длительность, `User-Agent`, `Referer`,
 `Accept-Language`. Тела запросов и ответов и cookie не пишутся. Записи старше 90 дней удаляются.
 
+## Оформление
+
+Тема повторяет `cu3rd` из Forgejo. Палитра и шрифты в `tailwind.config.ts` (значения из homelab `apps/forgejo/values.yaml`),
+компоненты `.box`, `.btn`, `.message-warning` в `web_src/css/index.css`, логотип и фавикон в `public/img/`.
+
 ## Настройка
 
 | Переменная | По умолчанию | Назначение |

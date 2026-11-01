@@ -167,6 +167,7 @@ func TestWriteCheckbox(t *testing.T) {
 	doc := NewHTMLParser(t, strings.NewReader(body))
 	doc.AssertElement(t, `#db-cu-db input[name="enabled"][checked]`, true)
 	assert.Contains(t, body, "МСК")
+	assert.Contains(t, body, "postgresql://"+s.login()+":ПАРОЛЬ@db.cu3rd.ru:5432/cu-db?sslmode=require")
 	assert.True(t, fake.Writes[s.login()+"/cu-db"])
 	assert.False(t, fake.Writes[s.login()+"/cu-sql"])
 

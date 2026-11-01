@@ -25,6 +25,8 @@ test('write checkbox acts on one database and keeps the password on screen', asy
   await expect(page.locator('[id="db-cu-db"]')).toContainText('МСК');
   await expect(page.locator('[id="db-cu-sql"]')).not.toContainText('МСК');
   await expect(page.locator('#password')).toHaveText(password);
+  const login = await page.locator('#login').innerText();
+  await expect(page.locator('[id="db-cu-db"]')).toContainText(`postgresql://${login}:`);
 
   await page.reload();
   await expect(page.getByLabel('Получить write-доступ к cu-db')).toBeChecked();
