@@ -1,7 +1,7 @@
 export type ToastLevel = 'info' | 'error';
 
 const levelClasses: Record<ToastLevel, string> = {
-  info: 'border border-line bg-box-header text-ink',
+  info: 'border border-line bg-code text-ink',
   error: 'border border-danger-border bg-danger-bg text-danger-text',
 };
 

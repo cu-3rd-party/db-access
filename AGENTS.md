@@ -8,7 +8,7 @@ Go-сервер (chi + xorm, html/template) + htmx:
 
 - `main.go`, `cmd/` — CLI (`urfave/cli/v3`): `web` (по умолчанию), `migrate`. `bindata.go` (тег `bindata`)
   встраивает `templates/` и `public/` в бинарь; без тега они читаются с диска (`DBACCESS_STATIC_ROOT`),
-  шаблоны перечитываются на каждый рендер.
+  шаблоны и ассеты перечитываются на каждый рендер.
 - `models/<feature>/` — xorm-структура + функции доступа (`account.GetByLogin(ctx, …)`),
   ошибки-типы с `Unwrap()` → `db.ErrNotExist` / `db.ErrInvalidArgument`. В пакете регистрация `db.RegisterModel`.
   Импорт в чужих пакетах — алиасом `account_model` (importas).
@@ -25,6 +25,7 @@ Go-сервер (chi + xorm, html/template) + htmx:
 - `templates/` — `*.tmpl`, имя = путь без расширения. `base/head` + `base/footer`, фрагменты фичи рядом.
 - `web_src/js` (TypeScript, webpack + esbuild) → `public/assets/js/index.js`; `web_src/css` (Tailwind 3) →
   `public/assets/css/index.css`. `web_src/js/htmx.ts` — конфиг htmx и тосты на ошибки ответа/сети.
+  Ассеты не раздаются отдельно: `InlineCSS`, `InlineJS`, `InlineLogo` встраивают их в страницу, лимит 22 КБ по сети.
 
 ## htmx-конвенции
 

@@ -1,8 +1,12 @@
 package integration
 
 import (
+	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -10,12 +14,14 @@ import (
 	"git.cu3rd.ru/cu3rd/db-access/models/accesslog"
 	account_model "git.cu3rd.ru/cu3rd/db-access/models/account"
 	"git.cu3rd.ru/cu3rd/db-access/models/db"
+	"git.cu3rd.ru/cu3rd/db-access/models/unittest"
 	"git.cu3rd.ru/cu3rd/db-access/modules/identity"
 	"git.cu3rd.ru/cu3rd/db-access/modules/setting"
 	access_service "git.cu3rd.ru/cu3rd/db-access/services/access"
 	"git.cu3rd.ru/cu3rd/db-access/services/provision"
 	"git.cu3rd.ru/cu3rd/db-access/tests"
 
+	"github.com/andybalholm/brotli"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -260,4 +266,42 @@ func TestExistingFixtureAccountKeepsGrant(t *testing.T) {
 	grants, err := account_model.Grants(t.Context(), acc.ID)
 	require.NoError(t, err)
 	assert.Contains(t, grants, "cu-sql")
+}
+
+// pageBudget is the limit on a whole page over the wire: everything the browser needs
+// has to arrive in one round trip after the handshake.
+const pageBudget = 22000
+
+func TestPageFitsBudgetAndNeedsNoOtherRequests(t *testing.T) {
+	if _, err := os.Stat(filepath.Join(unittest.ProjectRoot(), "public/assets/js/htmx.min.js")); err != nil {
+		t.Skip("frontend is not built: run make frontend")
+	}
+	prepare(t)
+	s := newSession(t)
+	get := func() (int, string) {
+		t.Helper()
+		req := NewRequest(t, "GET", "/")
+		req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+		resp := s.do(req, http.StatusOK)
+		require.Equal(t, "br", resp.Header().Get("Content-Encoding"))
+		assert.Contains(t, resp.Header().Values("Vary"), "Accept-Encoding")
+		wire := resp.Body.Len()
+		body, err := io.ReadAll(brotli.NewReader(bytes.NewReader(resp.Body.Bytes())))
+		require.NoError(t, err)
+		return wire, string(body)
+	}
+
+	wire, html := get()
+	t.Logf("first visit page: %d bytes over the wire, %d raw", wire, len(html))
+	assert.LessOrEqual(t, wire, pageBudget, "first visit page")
+	assert.NotContains(t, html, `src="`, "no external scripts or images")
+	assert.NotContains(t, html, `rel="stylesheet"`)
+	assert.Contains(t, html, "htmx")
+
+	// with the account the page carries the panel
+	s.do(AsHTMX(NewRequest(t, "POST", "/account")), http.StatusOK)
+	wire, html = get()
+	t.Logf("page with the panel: %d bytes over the wire, %d raw", wire, len(html))
+	assert.LessOrEqual(t, wire, pageBudget, "page with the panel")
+	assert.Contains(t, html, `id="login"`)
 }

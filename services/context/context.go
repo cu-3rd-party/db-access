@@ -7,8 +7,11 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"git.cu3rd.ru/cu3rd/db-access/models/db"
+	"git.cu3rd.ru/cu3rd/db-access/modules/assets"
+	"git.cu3rd.ru/cu3rd/db-access/modules/encoding"
 	"git.cu3rd.ru/cu3rd/db-access/modules/templates"
 
 	"github.com/go-chi/chi/v5"
@@ -37,15 +40,63 @@ func (ctx *Context) IsHTMX() bool {
 
 // HTML renders a template with ctx.Data.
 func (ctx *Context) HTML(status int, name string) {
-	ctx.Resp.Header().Set("Content-Type", "text/html; charset=utf-8")
 	// render to a buffer first so a template error never sends a half-written page
 	var buf bytes.Buffer
 	if err := templates.Renderer().HTML(&buf, name, ctx.Data); err != nil {
 		ctx.ServerError("render", err)
 		return
 	}
+	enc := encoding.Negotiate(ctx.Req.Header.Get("Accept-Encoding"))
+	body, err := encoding.Encode(buf.Bytes(), enc, encoding.QualityRequest)
+	if err != nil {
+		ctx.ServerError("encode", err)
+		return
+	}
+	ctx.writeHTML(status, enc, body)
+}
+
+var (
+	staticPagesMu sync.Mutex
+	staticPages   = map[string][]byte{}
+)
+
+// HTMLStatic is HTML for a page that is the same for everyone: the slow, smallest
+// compression runs once and its result is reused. Without embedded assets it
+// is not cached, so that edits stay live in development.
+func (ctx *Context) HTMLStatic(status int, name string) {
+	enc := encoding.Negotiate(ctx.Req.Header.Get("Accept-Encoding"))
+	key := name + "/" + enc
+	staticPagesMu.Lock()
+	defer staticPagesMu.Unlock()
+	body, ok := staticPages[key]
+	if !ok {
+		var buf bytes.Buffer
+		if err := templates.Renderer().HTML(&buf, name, ctx.Data); err != nil {
+			ctx.ServerError("render", err)
+			return
+		}
+		var err error
+		if body, err = encoding.Encode(buf.Bytes(), enc, encoding.QualityMax); err != nil {
+			ctx.ServerError("encode", err)
+			return
+		}
+		if assets.IsEmbedded() {
+			staticPages[key] = body
+		}
+	}
+	ctx.writeHTML(status, enc, body)
+}
+
+func (ctx *Context) writeHTML(status int, enc string, body []byte) {
+	h := ctx.Resp.Header()
+	h.Set("Content-Type", "text/html; charset=utf-8")
+	h.Add("Vary", "Accept-Encoding")
+	if enc != "" {
+		h.Set("Content-Encoding", enc)
+	}
+	h.Set("Content-Length", strconv.Itoa(len(body)))
 	ctx.Resp.WriteHeader(status)
-	_, _ = buf.WriteTo(ctx.Resp)
+	_, _ = ctx.Resp.Write(body)
 }
 
 // Redirect sends the client to url: for htmx requests via HX-Redirect,

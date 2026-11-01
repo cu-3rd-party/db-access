@@ -8,7 +8,6 @@ export default {
     extend: {
       colors: {
         page: '#050505',
-        box: {DEFAULT: '#0f0f0f', header: '#151515'},
         line: '#1c1c1c',
         code: '#0a0a0a',
         ink: {DEFAULT: '#dddddd', light: '#b1b1b1'},

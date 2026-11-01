@@ -140,7 +140,8 @@ func Page(ctx *context.Context) {
 		respond(ctx, &access_service.Credentials{Account: acc})
 	case errors.Is(err, db.ErrNotExist):
 		ctx.Data["Title"] = "Доступ к базам данных"
-		ctx.HTML(http.StatusOK, tplPage)
+		// nothing personal in it: the login is in the cookie and the panel comes with the POST
+		ctx.HTMLStatic(http.StatusOK, tplPage)
 	default:
 		ctx.ServerError("GetByLogin", err)
 	}

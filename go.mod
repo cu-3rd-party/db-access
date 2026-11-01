@@ -8,6 +8,7 @@ ignore ./node_modules
 
 require (
 	github.com/PuerkitoBio/goquery v1.13.0
+	github.com/andybalholm/brotli v1.2.7
 	github.com/go-chi/chi/v5 v5.5.0
 	github.com/go-testfixtures/testfixtures/v3 v3.19.0
 	github.com/lib/pq v1.12.3

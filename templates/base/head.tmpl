@@ -5,13 +5,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="theme-color" content="#050505">
 	<title>{{if .Title}}{{.Title}} - {{end}}cu3rd</title>
-	<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-	<link rel="stylesheet" href="{{AssetURL "css/index.css"}}">
-	<script defer src="{{AssetURL "js/index.js"}}"></script>
+	{{FaviconLink}}
+	<style>{{InlineCSS}}</style>
 </head>
 <body class="flex min-h-screen flex-col bg-page text-ink" hx-headers='{"X-Requested-With": "htmx"}'>
-<nav class="flex h-[49px] shrink-0 items-center gap-4 border-b border-line bg-page px-5">
-	<a href="/" aria-label="На главную"><img src="/img/logo.svg" width="54" height="30" alt="3rd party"></a>
-	<a class="text-ink-light hover:text-ink" href="https://git.cu3rd.ru">Forgejo</a>
+<nav class="flex h-[49px] shrink-0 items-center border-b border-line bg-page px-4 sm:px-5">
+	<a href="/" aria-label="3rd party, на главную">{{InlineLogo}}</a>
 </nav>
-<main class="mx-auto w-full max-w-3xl flex-1 px-4 py-4">
+<main class="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 sm:py-8">

@@ -3,18 +3,44 @@ package templates
 import (
 	"errors"
 	"html/template"
+	"io/fs"
+	"log/slog"
+	"strings"
 	"time"
+
+	"git.cu3rd.ru/cu3rd/db-access/modules/assets"
 )
 
-// AssetVersion busts browser caches of /assets between builds.
-var AssetVersion = time.Now().Format("20060102150405")
-
 var msk = time.FixedZone("MSK", 3*60*60)
+
+func readPublic(path string) string {
+	content, err := fs.ReadFile(assets.Public(), path)
+	if err != nil {
+		slog.Error("read asset", "path", path, "err", err)
+		return ""
+	}
+	return string(content)
+}
+
+// favicon draws the logo: the same path data compresses to almost nothing the second
+// time, and a data: URL needs no request. On a light browser tab it is dark.
+func favicon(logo string) template.HTML {
+	svg := strings.NewReplacer(`"`, "'", ` fill='#ddd'`, "", "#", "%23").Replace(logo)
+	svg = strings.Replace(svg, "<path", "<style>path{fill:%23ddd}@media(prefers-color-scheme:light){path{fill:%23050505}}</style><path", 1)
+	return template.HTML(`<link rel="icon" href="data:image/svg+xml,` + svg + `">`) //nolint:gosec // our own file
+}
 
 // NewFuncMap returns the functions available in templates.
 func NewFuncMap() template.FuncMap {
 	return template.FuncMap{
-		"AssetURL": func(path string) string { return "/assets/" + path + "?v=" + AssetVersion },
+		// CSS, JS and the logo live in the page: every extra request would be another round trip
+		"InlineCSS": func() template.CSS { return template.CSS(readPublic("assets/css/index.css")) },
+		"InlineJS": func() template.JS {
+			js := readPublic("assets/js/htmx.min.js") + ";" + readPublic("assets/js/index.js")
+			return template.JS(strings.ReplaceAll(js, "</script", `<\/script`))
+		},
+		"InlineLogo":  func() template.HTML { return template.HTML(readPublic("img/logo.svg")) },
+		"FaviconLink": func() template.HTML { return favicon(readPublic("img/logo.svg")) },
 		// dict builds a map for passing several values to a sub-template:
 		// {{template "access/database" dict "Name" .Name "Write" .Write}}
 		"dict": func(kv ...any) (map[string]any, error) {

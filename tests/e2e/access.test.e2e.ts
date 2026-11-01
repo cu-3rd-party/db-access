@@ -52,3 +52,23 @@ test('rotation shows new credentials once', async ({page}) => {
   await expect(page.locator('#login')).toHaveText(newLogin);
   await expect(page.locator('#password')).toHaveCount(0);
 });
+
+for (const width of [320, 375, 768]) {
+  test(`no horizontal scroll at ${width}px`, async ({page}) => {
+    await page.setViewportSize({width, height: 700});
+    await page.goto('/');
+    await expect(page.locator('#password')).toBeVisible();
+    await page.getByLabel('Получить write-доступ к cu-db').check();
+    await expect(page.locator('[id="db-cu-db"]')).toContainText('МСК');
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+}
+
+test('the page makes no requests of its own except creating the user', async ({page}) => {
+  const requests: string[] = [];
+  page.on('request', (request) => requests.push(`${request.method()} ${new URL(request.url()).pathname}`));
+  await page.goto('/');
+  await expect(page.locator('#password')).toBeVisible();
+  expect(requests.filter((r) => !r.includes('/favicon.ico'))).toEqual(['GET /', 'POST /account']);
+});

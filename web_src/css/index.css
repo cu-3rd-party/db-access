@@ -10,20 +10,8 @@
 }
 
 @layer components {
-  .box {
-    @apply overflow-hidden rounded-box border border-line bg-box;
-  }
-
-  .box-header {
-    @apply border-b border-line bg-box-header px-4 py-2.5 text-[15px] font-medium;
-  }
-
-  .box-body {
-    @apply p-4;
-  }
-
   .btn {
-    @apply inline-block rounded-box px-5 py-2.5 disabled:opacity-50;
+    @apply inline-block w-full rounded-box px-5 py-2.5 disabled:opacity-50 sm:w-auto;
   }
 
   .btn-primary {
@@ -36,10 +24,6 @@
 
   .code-value {
     @apply rounded-box bg-code font-mono;
-  }
-
-  .message-warning {
-    @apply overflow-hidden rounded-box border border-warning-border bg-warning-bg text-warning-text;
   }
 }
 
