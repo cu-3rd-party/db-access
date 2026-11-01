@@ -1,8 +1,6 @@
 {{template "base/head" .}}
 <header class="mb-6">
-	<h1 class="mb-1 text-xl font-medium">Доступ к учебным базам данных</h1>
-	<p class="mb-6 text-sm text-gray-600 dark:text-gray-400">Базы курсов: <code>SQL</code> и <code>Базы данных</code></p>
-	<p class="text-ink-light">Базы курсов ЦУ: <code>cu-sql</code> и <code>cu-db</code>. Этот браузер запоминается по cookie, поэтому при следующем заходе пользователь будет тем же.</p>
+	<h1 class="text-xl font-medium">Доступ к учебным базам данных</h1>
 </header>
 {{if .Account}}
 {{template "access/panel" .}}

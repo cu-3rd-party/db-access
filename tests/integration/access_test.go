@@ -86,9 +86,16 @@ func TestPasswordIsShownOnce(t *testing.T) {
 	assert.Contains(t, fake.Roles, s.login())
 	assert.Contains(t, body, "postgresql://"+s.login()+":"+m[1]+"@db.cu3rd.ru:5432/cu-sql?sslmode=require")
 	assert.Contains(t, body, "/cu-db?sslmode=require")
+	assert.Contains(t, body, "your_pass = '"+m[1]+"'")
+	assert.Contains(t, body, "postgresql+psycopg2://{your_login}:{your_pass}@db.cu3rd.ru:5432/cu-sql?sslmode=require")
+	assert.Contains(t, body, "postgresql+psycopg2://{your_login}:{your_pass}@db.cu3rd.ru:5432/cu-db?sslmode=require")
+	assert.Contains(t, body, "SET search_path TO db_vzhukh, public")
+	assert.Contains(t, body, "SELECT 1 AS ok")
 
 	again := s.do(NewRequest(t, "GET", "/"), http.StatusOK).Body.String()
 	assert.NotContains(t, again, m[1])
+	assert.Contains(t, again, "your_pass = 'ПАРОЛЬ'")
+	assert.Contains(t, again, "postgresql://"+s.login()+":ПАРОЛЬ@db.cu3rd.ru:5432/cu-sql?sslmode=require")
 	assert.Contains(t, again, `id="login"`)
 	repeated := s.do(AsHTMX(NewRequest(t, "POST", "/account")), http.StatusOK).Body.String()
 	assert.NotContains(t, repeated, m[1])
@@ -171,9 +178,9 @@ func TestWriteCheckbox(t *testing.T) {
 	on := AsHTMX(NewRequestWithValues(t, "POST", "/write", map[string]string{"database": "cu-db", "enabled": "on"}))
 	body := s.do(on, http.StatusOK).Body.String()
 	doc := NewHTMLParser(t, strings.NewReader(body))
-	doc.AssertElement(t, `#db-cu-db input[name="enabled"][checked]`, true)
+	doc.AssertElement(t, `#write-status-cu-db`, true)
 	assert.Contains(t, body, "МСК")
-	assert.Contains(t, body, "postgresql://"+s.login()+":ПАРОЛЬ@db.cu3rd.ru:5432/cu-db?sslmode=require")
+	assert.NotContains(t, body, "postgresql://", "a password on the screen must stay untouched")
 	assert.True(t, fake.Writes[s.login()+"/cu-db"])
 	assert.False(t, fake.Writes[s.login()+"/cu-sql"])
 
@@ -184,7 +191,7 @@ func TestWriteCheckbox(t *testing.T) {
 
 	off := AsHTMX(NewRequestWithValues(t, "POST", "/write", map[string]string{"database": "cu-db"}))
 	body = s.do(off, http.StatusOK).Body.String()
-	assert.NotContains(t, body, "checked")
+	assert.NotContains(t, body, "МСК")
 	assert.False(t, fake.Writes[s.login()+"/cu-db"])
 
 	bad := AsHTMX(NewRequestWithValues(t, "POST", "/write", map[string]string{"database": "postgres", "enabled": "on"}))

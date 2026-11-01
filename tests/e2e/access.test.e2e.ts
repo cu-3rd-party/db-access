@@ -26,7 +26,7 @@ test('write checkbox acts on one database and keeps the password on screen', asy
   await expect(page.locator('[id="db-cu-sql"]')).not.toContainText('МСК');
   await expect(page.locator('#password')).toHaveText(password);
   const login = await page.locator('#login').innerText();
-  await expect(page.locator('[id="db-cu-db"]')).toContainText(`postgresql://${login}:`);
+  await expect(page.locator('[id="conn-cu-db"]')).toHaveText(new RegExp(`^postgresql://${login}:${password}@`));
 
   await page.reload();
   await expect(page.getByLabel('Получить write-доступ к cu-db')).toBeChecked();
@@ -71,4 +71,44 @@ test('the page makes no requests of its own except creating the user', async ({p
   await page.goto('/');
   await expect(page.locator('#password')).toBeVisible();
   expect(requests.filter((r) => !r.includes('/favicon.ico'))).toEqual(['GET /', 'POST /account']);
+});
+
+test('copy button puts the connection string with the password on the clipboard', async ({page, context}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/');
+  const conn = await page.locator('[id="conn-cu-sql"]').innerText();
+  expect(conn).toContain(await page.locator('#password').innerText());
+
+  const button = page.locator('[data-copy="conn-cu-sql"]');
+  await button.click();
+  await expect(button).toHaveText('Скопировано');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(conn);
+});
+
+test('connection string fits on one line on a desktop screen', async ({page}) => {
+  await page.setViewportSize({width: 1280, height: 800});
+  await page.goto('/');
+  await expect(page.locator('#password')).toBeVisible();
+  for (const id of ['conn-cu-sql', 'conn-cu-db']) {
+    const lines = await page.locator(`[id="${id}"]`).evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return range.getClientRects().length;
+    });
+    expect(lines).toBe(1);
+  }
+});
+
+test('code examples carry the credentials', async ({page}) => {
+  await page.goto('/');
+  const password = await page.locator('#password').innerText();
+  const login = await page.locator('#login').innerText();
+  for (const name of ['cu-sql', 'cu-db']) {
+    const row = page.locator(`[id="db-${name}"]`);
+    await row.getByText('Пример подключения на Python').click();
+    const example = row.locator('pre');
+    await expect(example).toBeVisible();
+    await expect(example).toContainText(`your_login = '${login}'`);
+    await expect(example).toContainText(`your_pass = '${password}'`);
+  }
 });

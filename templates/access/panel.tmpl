@@ -17,14 +17,13 @@
 			<dt class="text-ink-light">Логин</dt><dd><code id="login" class="select-all">{{.Account.Login}}</code></dd>
 			<dt class="text-ink-light">SSL</dt><dd><code>sslmode=require</code></dd>
 		</dl>
-		<p class="mt-3 text-ink-light">Клиент должен отправлять SNI: нужен libpq 14 или новее (psql, DBeaver и другие на его основе). По умолчанию доступ только на чтение.</p>
 	</section>
 
 	<section class="py-6">
 		<h2 class="mb-1 text-[15px] font-medium">Базы данных</h2>
 		<p id="write-note" class="text-warning-text">Write-доступ действует на одну базу и будет забран через день ({{.WriteHours}} ч). После этого созданные вами таблицы останутся доступны только на чтение.</p>
 		<div class="mt-2 flex flex-col divide-y divide-line">
-			{{range .Databases}}{{template "access/database" dict "Name" .Name "Write" .Write "ExpiresUnix" .ExpiresUnix "WriteHours" $.WriteHours "Login" $.Account.Login "Password" $.Password "DBHost" $.DBHost "DBPort" $.DBPort}}{{end}}
+			{{range .Databases}}{{template "access/database" dict "Name" .Name "Write" .Write "ExpiresUnix" .ExpiresUnix "Login" $.Account.Login "Password" $.Password "DBHost" $.DBHost "DBPort" $.DBPort}}{{end}}
 		</div>
 	</section>
 

@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	tplPage  = "access/page"
-	tplPanel = "access/panel"
-	tplRow   = "access/database"
+	tplPage        = "access/page"
+	tplPanel       = "access/panel"
+	tplWriteStatus = "access/write-status"
 
 	cookieLogin = "cu_login"
 	cookieSig   = "cu_login_sig"
@@ -230,14 +230,10 @@ func Write(ctx *context.Context) {
 		ctx.Redirect("/")
 		return
 	}
-	// only the row: swapping the panel would remove a password still on the screen
-	view := DatabaseView{Name: name}
+	// only the status: a password on the screen has to stay in the connection string
+	ctx.Data["Name"], ctx.Data["Write"] = name, grant != nil
 	if grant != nil {
-		view.Write, view.ExpiresUnix = true, grant.ExpiresUnix
+		ctx.Data["ExpiresUnix"] = grant.ExpiresUnix
 	}
-	ctx.Data["Name"], ctx.Data["Write"], ctx.Data["ExpiresUnix"] = view.Name, view.Write, view.ExpiresUnix
-	ctx.Data["WriteHours"] = int(setting.WriteTTL.Hours())
-	ctx.Data["Login"] = acc.Login
-	ctx.Data["DBHost"], ctx.Data["DBPort"] = setting.PublicDBHost, setting.PublicDBPort
-	ctx.HTML(http.StatusOK, tplRow)
+	ctx.HTML(http.StatusOK, tplWriteStatus)
 }

@@ -1,0 +1,14 @@
+from sqlalchemy import create_engine
+import psycopg2
+import pandas as pd
+
+your_login = '{{.Login}}'
+your_pass = '{{if .Password}}{{.Password}}{{else}}ПАРОЛЬ{{end}}'
+
+engine = create_engine(f"postgresql+psycopg2://{your_login}:{your_pass}@{{.DBHost}}:{{.DBPort}}/{{.Name}}?sslmode=require")
+
+# Проверка, что подключился успешно
+query = """
+SELECT 1 AS ok
+"""
+pd.read_sql(query, engine)

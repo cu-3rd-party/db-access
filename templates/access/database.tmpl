@@ -1,13 +1,20 @@
 <div id="db-{{.Name}}" class="database py-4">
 	<div class="mb-1 font-mono font-medium">{{.Name}}</div>
-	{{if .Login}}<code class="code-value block select-all break-all p-2 text-ink-light">postgresql://{{.Login}}:{{if .Password}}{{.Password}}{{else}}ПАРОЛЬ{{end}}@{{.DBHost}}:{{.DBPort}}/{{.Name}}?sslmode=require</code>{{end}}
-	<form method="post" action="/write" hx-post="/write" hx-trigger="change" hx-target="#db-{{.Name}}" hx-swap="outerHTML" class="mt-2 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+	<div class="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+		<code id="conn-{{.Name}}" class="code-value block min-w-0 flex-1 select-all break-all p-2 text-ink-light">postgresql://{{.Login}}:{{if .Password}}{{.Password}}{{else}}ПАРОЛЬ{{end}}@{{.DBHost}}:{{.DBPort}}/{{.Name}}?sslmode=require</code>
+		<button class="btn btn-secondary shrink-0 whitespace-nowrap" type="button" data-copy="conn-{{.Name}}">Скопировать</button>
+	</div>
+	<form method="post" action="/write" hx-post="/write" hx-trigger="change" hx-target="#write-status-{{.Name}}" hx-swap="outerHTML" class="mt-2 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
 		<input type="hidden" name="database" value="{{.Name}}">
 		<label class="flex min-h-[44px] items-center gap-2 sm:min-h-0">
 			<input class="h-4 w-4 shrink-0 accent-primary" type="checkbox" name="enabled" value="on" {{if .Write}}checked{{end}}>
 			Получить write-доступ к {{.Name}}
 		</label>
 		<noscript><button class="btn btn-secondary" type="submit">Применить</button></noscript>
-		{{if .Write}}<span class="text-warning-text">до {{TimeMSK .ExpiresUnix}}</span>{{end}}
+		{{template "access/write-status" .}}
 	</form>
+	<details class="mt-2">
+		<summary class="cursor-pointer text-ink-light hover:text-ink">Пример подключения на Python</summary>
+		<pre class="code-value mt-2 overflow-x-auto p-2 text-ink-light">{{if eq .Name "cu-db"}}{{template "access/example-db" .}}{{else}}{{template "access/example-sql" .}}{{end}}</pre>
+	</details>
 </div>
