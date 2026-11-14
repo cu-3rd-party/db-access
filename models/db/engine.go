@@ -4,8 +4,10 @@ package db
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"git.cu3rd.ru/cu3rd/db-access/models/migrations"
 	"git.cu3rd.ru/cu3rd/db-access/modules/setting"
@@ -38,6 +40,10 @@ func NewEngine() (*xorm.Engine, error) {
 		}
 		dsn = "file:" + dsn + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"
 	case "postgres":
+		var err error
+		if dsn, err = singleRoundTripDSN(dsn); err != nil {
+			return nil, err
+		}
 	default:
 		return nil, fmt.Errorf("unsupported database type %q", driver)
 	}
@@ -50,6 +56,24 @@ func NewEngine() (*xorm.Engine, error) {
 	}
 	engine.SetMapper(names.GonicMapper{})
 	return engine, nil
+}
+
+// singleRoundTripDSN включает binary_parameters у lib/pq. Без него запрос с параметрами идёт
+// в два обмена (Parse+Sync, затем Bind+Execute+Sync), и transaction-пулер PgBouncer между ними
+// отдаёт серверное соединение другому клиенту: тот перезаписывает неименованный statement,
+// и запрос молча выполняется чужим текстом. С binary_parameters всё уходит одним обменом.
+func singleRoundTripDSN(dsn string) (string, error) {
+	if !strings.Contains(dsn, "://") {
+		return dsn + " binary_parameters=yes", nil
+	}
+	u, err := url.Parse(dsn)
+	if err != nil {
+		return "", fmt.Errorf("parse postgres dsn: %w", err)
+	}
+	q := u.Query()
+	q.Set("binary_parameters", "yes")
+	u.RawQuery = q.Encode()
+	return u.String(), nil
 }
 
 // InitEngine opens the database, runs migrations and installs the global engine.
